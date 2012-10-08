@@ -40,20 +40,32 @@ class Config:
     # A dictionary with tag names as keys and lists of channels as the values
     # for those keys.
     tags = {
-        'compiz': ['compiz',],
+        'stackirc': ['#stackirc',],
     }
     
     # The time to wait between refreshing information with the API (in seconds).
     # (I suggest avoiding numbers <60.)
-    interval = 60
+    interval = 60.0
 
 #=====================================
 #        End of Configuration
 #=====================================
 
 from irc import client
-from stackpy import APIError, Site
-from time import time
+from stackpy import API, APIError, Site
+from threading import Thread
+from time import sleep, time
+
+class Timer(Thread):
+    
+    def __init__(self, interval, target):
+        Thread.__init__(self)
+        self.interval, self.target = interval, target
+    
+    def run(self):
+        while True:
+            sleep(Config.interval)
+            self.target()
 
 class StackIRC:
     
@@ -62,6 +74,7 @@ class StackIRC:
         self.connection   = None
         self.last_request = int(time())
         self.site         = Site(Config.site)
+        self.timer        = Timer(Config.interval, self.refresh)
     
     def connect(self):
         try:
@@ -72,10 +85,23 @@ class StackIRC:
             self.connection = self.client.server().connect(Config.server,
                                                            Config.port,
                                                            Config.nick)
+            for t in Config.tags.values():
+                for c in t:
+                    print 'Joining channel %s...' % c
+                    self.connection.join(c)
+            self.timer.start()
         except client.ServerConnectionError, e:
             print 'Error: %s' % e
+        
+        print 'Connections established!'
+        self.client.process_forever()
     
     def refresh(self):
+        
+        # Sample demonstration.
+        self.connection.privmsg('#stackirc', 'Hello world!')
+        return
+        
         try:
             cur_time = int(time())
             questions = self.site.questions.tagged(Config.tags) \
@@ -87,5 +113,6 @@ class StackIRC:
             print 'Error: %s' % e
 
 if __name__ == '__main__':
+    API.key = Config.key
     irc = StackIRC()
     irc.connect()
