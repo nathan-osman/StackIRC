@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Copyright (c) 2012 Nathan Osman
 
@@ -23,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #  Configuration for the Application
 #=====================================
 
-class Config
+class Config:
     
     # The IRC server and port to connect to.
     server = 'irc.freenode.net'
@@ -68,17 +69,20 @@ class StackIRC:
                 Config.server,
                 Config.port,
             )
-            self.connection = client.server().connect(Config.server,
-                                                      Config.port,
-                                                      Config.nick)
+            self.connection = self.client.server().connect(Config.server,
+                                                           Config.port,
+                                                           Config.nick)
         except client.ServerConnectionError, e:
             print 'Error: %s' % e
     
     def refresh(self):
         try:
-            questions = self.site.questions.tagged(Config.tags)
+            cur_time = int(time())
+            questions = self.site.questions.tagged(Config.tags) \
+                .fromdate(self.last_request).todate(cur_time)
             for q in questions:
-                pass
+                print q
+            self.last_request = cur_time + 1
         except APIError, e:
             print 'Error: %s' % e
 
