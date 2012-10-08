@@ -29,6 +29,13 @@ class Config
     server = 'irc.freenode.net'
     port   = 6667
     
+    # The API key for requests and Stack Exchange site.
+    key  = ''
+    site = 'askubuntu'
+    
+    # The nick for this bot.
+    nick = 'StackIRC'
+    
     # A dictionary with tag names as keys and lists of channels as the values
     # for those keys.
     tags = {
@@ -43,3 +50,38 @@ class Config
 #        End of Configuration
 #=====================================
 
+from irc import client
+from stackpy import APIError, Site
+from time import time
+
+class StackIRC:
+    
+    def __init__(self):
+        self.client       = client.IRC()
+        self.connection   = None
+        self.last_request = int(time())
+        self.site         = Site(Config.site)
+    
+    def connect(self):
+        try:
+            print 'Initiating connection to %s:%s...' % (
+                Config.server,
+                Config.port,
+            )
+            self.connection = client.server().connect(Config.server,
+                                                      Config.port,
+                                                      Config.nick)
+        except client.ServerConnectionError, e:
+            print 'Error: %s' % e
+    
+    def refresh(self):
+        try:
+            questions = self.site.questions.tagged(Config.tags)
+            for q in questions:
+                pass
+        except APIError, e:
+            print 'Error: %s' % e
+
+if __name__ == '__main__':
+    irc = StackIRC()
+    irc.connect()
