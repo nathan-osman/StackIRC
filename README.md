@@ -6,12 +6,9 @@ StackIRC is a small Python application that posts questions from Stack Exchange 
 
 StackIRC currently depends on the following:
 
-- [python-irclib](https://bitbucket.org/jaraco/irc) - you will need to retrieve the source, extract the files, and build the package with the following commands:
+- [python-twisted](http://twistedmatrix.com/trac/) - you will need to run the following command in order to install the package:
 
-        wget http://pypi.python.org/packages/source/i/irc/irc-3.1.1.zip
-        unzip irc-3.1.1.zip
-        cd irc-3.1.1
-        sudo python setup.py install
+        sudo apt-get install python-twisted
 
 - [Stack.PY](https://launchpad.net/stackpy) - you will need to run the following commands to add my PPA and install the package:
 
@@ -19,6 +16,18 @@ StackIRC currently depends on the following:
         sudo apt-get update
         sudo apt-get install python-stackpy
 
-### Setup
+I have tested StackIRC *only* on Python 2.7.
 
-[TODO]
+### Installation
+
+In order to install Stack.PY you will need to unpack the archive you downloaded and open a terminal in the directory that was created. You can then run the following command to install the Python modules:
+
+    sudo python setup.py install
+
+The application can be started with the 'stackirc' command:
+
+    stackirc
+
+The first time this command is run, a configuration file will be generated and placed in your home directory (`~/.stackirc/config.py`). You will need to open the file and follow the instructions inside to continue setting up the application.
+
+Once complete, you can run the `stackirc` command once again to start the server.
