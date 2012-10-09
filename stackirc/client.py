@@ -45,13 +45,11 @@ class StackIRCClient(irc.IRCClient):
     
     def refresh(self):
         try:
-            to_time = int(time())
-            questions = self.site.questions.tagged(self.config.tags.keys()).sort('creation') \
-                .fromdate(self.last_request).todate(to_time)
-            latest_time = 0
+            questions = self.site.questions.tagged(self.config.tags.keys()) \
+                .sort('creation').order('asc').fromdate(self.last_request) \
+                .pagesize(2).filter('A9T75')
             sorted_questions = {}
             for q in questions:
-                latest_time = max(latest_time, timegm(q.creation_date.utctimetuple()))
                 for t in q.tags:
                     if t in self.config.tags:
                         if t in sorted_questions: sorted_questions[t].append(q)
@@ -64,9 +62,9 @@ class StackIRCClient(irc.IRCClient):
                             self.config.site,
                             q.question_id,
                         )).encode("utf-8"))
-            # If any questions were returned, grab the latest timestamp on them.
+            # If any questions were returned, grab the timestamp of the latest item.
             if len(questions):
-                self.last_request = latest_time + 1
+                self.last_request = questions[-1].creation_date_timestamp
         except APIError, e:
             print 'API Error: %s' % e
 
