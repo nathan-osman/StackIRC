@@ -40,17 +40,17 @@ class StackIRCClient(irc.IRCClient):
                 self.join(c)
         # Create the loop that calls 'refresh'.
         self.loop = LoopingCall(self.refresh)
-        #self.loop.start(self.config.interval, False)
-        self.loop.start(self.config.interval)
+        self.loop.start(self.config.interval, False)
     
     def refresh(self):
         try:
-            cur_time = int(time())
-            questions = self.site.search.tagged(self.config.tags.keys()).sort('creation') \
-                .fromdate(self.last_request).todate(cur_time)
-            print questions._url
+            to_time = int(time())
+            questions = self.site.questions.tagged(self.config.tags.keys()).sort('creation') \
+                .fromdate(self.last_request).todate(to_time)
+            latest_time = 0
             sorted_questions = {}
             for q in questions:
+                latest_time = max(latest_time, q.creation_date)
                 for t in q.tags:
                     if t in self.config.tags:
                         if t in sorted_questions: sorted_questions[t].append(q)
@@ -63,7 +63,9 @@ class StackIRCClient(irc.IRCClient):
                             self.config.site,
                             q.question_id,
                         ))
-            self.last_request = cur_time + 1
+            # If any questions were returned, grab the latest timestamp on them.
+            if len(questions):
+                self.last_request = latest_time + 1
         except APIError, e:
             print 'API Error: %s' % e
 
