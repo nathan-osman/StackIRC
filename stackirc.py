@@ -32,7 +32,7 @@ class Config:
     
     # The API key for requests and Stack Exchange site.
     key  = ''
-    site = 'askubuntu'
+    site = 'stackoverflow.com'
     
     # The nick for this bot.
     nick = 'StackIRC'
@@ -40,7 +40,7 @@ class Config:
     # A dictionary with tag names as keys and lists of channels as the values
     # for those keys.
     tags = {
-        'stackirc': ['#stackirc',],
+        'php': ['#stackirc',],
     }
     
     # The time to wait between refreshing information with the API (in seconds).
@@ -64,55 +64,60 @@ class Timer(Thread):
     
     def run(self):
         while True:
-            sleep(Config.interval)
             self.target()
+            sleep(Config.interval)
 
-class StackIRC:
+class StackIRC(client.SimpleIRCClient):
     
     def __init__(self):
-        self.client       = client.IRC()
-        self.connection   = None
+        client.SimpleIRCClient.__init__(self)
         self.last_request = int(time())
         self.site         = Site(Config.site)
         self.timer        = Timer(Config.interval, self.refresh)
     
-    def connect(self):
-        try:
-            print 'Initiating connection to %s:%s...' % (
-                Config.server,
-                Config.port,
-            )
-            self.connection = self.client.server().connect(Config.server,
-                                                           Config.port,
-                                                           Config.nick)
-            for t in Config.tags.values():
-                for c in t:
-                    print 'Joining channel %s...' % c
-                    self.connection.join(c)
-            self.timer.start()
-        except client.ServerConnectionError, e:
-            print 'Error: %s' % e
-        
+    def on_welcome(self, c, e):
+        for t in Config.tags.values():
+            for c in t:
+                print 'Joining channel %s...' % c
+                self.connection.join(c)
         print 'Connections established!'
-        self.client.process_forever()
+        self.timer.start()
     
     def refresh(self):
-        
-        # Sample demonstration.
-        self.connection.privmsg('#stackirc', 'Hello world!')
-        return
-        
         try:
             cur_time = int(time())
-            questions = self.site.questions.tagged(Config.tags) \
+            questions = self.site.search.tagged(Config.tags.keys()).sort('creation') \
                 .fromdate(self.last_request).todate(cur_time)
+            sorted_questions = {}
             for q in questions:
-                print q
+                for t in q.tags:
+                    if t in Config.tags:
+                        if t in sorted_questions: sorted_questions[t].append(q)
+                        else:                     sorted_questions[t] = [q,]
+            for t in sorted_questions.keys():
+                for q in sorted_questions[t]:
+                    for c in Config.tags[t]:
+                        self.connection.privmsg(c, '%s | http://%s/q/%s' % (
+                            q.title,
+                            Config.site,
+                            q.question_id,
+                        ))
             self.last_request = cur_time + 1
         except APIError, e:
             print 'Error: %s' % e
 
 if __name__ == '__main__':
     API.key = Config.key
-    irc = StackIRC()
-    irc.connect()
+    c = StackIRC()
+    try:
+        print 'Initiating connection to %s:%s...' % (
+            Config.server,
+            Config.port,
+        )
+        c.connect(Config.server,
+                  Config.port,
+                  Config.nick)
+        c.start()
+    except client.ServerConnectionError, e:
+        print 'Error: %s' % e
+    
