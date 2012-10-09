@@ -59,11 +59,11 @@ class StackIRCClient(irc.IRCClient):
             for t in sorted_questions.keys():
                 for q in sorted_questions[t]:
                     for c in self.config.tags[t]:
-                        self.msg(c, '%s | http://%s/q/%s' % (
+                        self.msg(c, ('%s | http://%s/q/%s' % (
                             q.title,
                             self.config.site,
                             q.question_id,
-                        ))
+                        )).encode("utf-8"))
             # If any questions were returned, grab the latest timestamp on them.
             if len(questions):
                 self.last_request = latest_time + 1
