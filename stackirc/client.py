@@ -19,6 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
+from calendar import timegm
 from stackpy import API, APIError, Site
 from time import time
 from twisted.words.protocols import irc
@@ -50,7 +51,7 @@ class StackIRCClient(irc.IRCClient):
             latest_time = 0
             sorted_questions = {}
             for q in questions:
-                latest_time = max(latest_time, q.creation_date)
+                latest_time = max(latest_time, timegm(q.creation_date.utctimetuple()))
                 for t in q.tags:
                     if t in self.config.tags:
                         if t in sorted_questions: sorted_questions[t].append(q)
