@@ -22,7 +22,7 @@ I have tested StackIRC *only* on Python 2.7.
 
 In order to install Stack.PY you will need to unpack the archive you downloaded and open a terminal in the directory that was created. You can then run the following command to install the Python modules:
 
-    sudo python setup.py install
+    sudo ./setup.py install
 
 The application can be started with the 'stackirc' command:
 

@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from imp import find_module, load_module
 from os import mkdir, path
+from stackpy import API
 from sys import exit
 from twisted.internet import reactor
 
@@ -84,6 +85,7 @@ class StackIRCBot:
             f.write(_template)
             exit()
         # Provide the clients with access to the config values and create the factory.
+        API.key = self.config.key
         StackIRCClient.config   = self.config
         StackIRCClient.nickname = self.config.nick
         self.factory = StackIRCFactory()

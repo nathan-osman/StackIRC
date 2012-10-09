@@ -40,13 +40,15 @@ class StackIRCClient(irc.IRCClient):
                 self.join(c)
         # Create the loop that calls 'refresh'.
         self.loop = LoopingCall(self.refresh)
-        self.loop.start(self.config.interval, False)
+        #self.loop.start(self.config.interval, False)
+        self.loop.start(self.config.interval)
     
     def refresh(self):
         try:
             cur_time = int(time())
             questions = self.site.search.tagged(self.config.tags.keys()).sort('creation') \
                 .fromdate(self.last_request).todate(cur_time)
+            print questions._url
             sorted_questions = {}
             for q in questions:
                 for t in q.tags:
