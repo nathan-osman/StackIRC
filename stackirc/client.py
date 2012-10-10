@@ -51,7 +51,6 @@ class StackIRCClient(irc.IRCClient):
             questions = self.site.questions.tagged(StackIRCConfig.tags.keys()) \
                 .sort('creation').order('asc').fromdate(self.last_request) \
                 .pagesize(2).filter('A9T75')
-            print questions._url
             sorted_questions = {}
             for q in questions:
                 for t in q.tags:
