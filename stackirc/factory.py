@@ -19,25 +19,14 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
-from sys import exit
-from twisted.internet import reactor
+from twisted.internet import protocol
 
-from factory import StackIRCFactory
-from config import StackIRCConfig
+from client import StackIRCClient
 
-class StackIRCBot:
+class StackIRCFactory(protocol.ClientFactory):
     
-    def __init__(self):
-        self.factory = StackIRCFactory()
+    def buildProtocol(self, addr):
+        return StackIRCClient()
     
-    def run(self):
-        # Ensure the settings are loaded before proceeding.
-        if not StackIRCConfig.load():
-            print 'The file "%s" does not exist. StackIRC will now create the file and exit. Please open the file in a text editor, adjust the configuration values, and start StackIRC again.' % StackIRCConfig.cfile
-            StackIRCConfig.create()
-            exit()
-        # Now connect and start the client.
-        print 'Connecting to %s:%s...' % (StackIRCConfig.server, StackIRCConfig.port,)
-        reactor.connectTCP(StackIRCConfig.server, StackIRCConfig.port, self.factory)
-        reactor.run()
-
+    def clientConnectionLost(self, connector, r):
+        connector.connect()
