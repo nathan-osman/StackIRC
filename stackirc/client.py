@@ -37,18 +37,16 @@ class StackIRCClient(irc.IRCClient):
     
     def signedOn(self):
         print 'Connection and sign-on succeeded.'
-        # Connect to the channels in the config file.
-        for t in StackIRCConfig.tags.values():
-            for c in t:
-                print 'Joining %s...' % c
-                self.join(c)
+        for c in set([j for i in StackIRCConfig.tags.values() for j in i]):
+            print 'Joining %s...' % c
+            self.join(c)
         # Create the loop that calls 'refresh'.
         self.loop = LoopingCall(self.refresh)
         self.loop.start(StackIRCConfig.interval, False)
     
     def refresh(self):
         try:
-            questions = self.site.questions.tagged(StackIRCConfig.tags.keys()) \
+            questions = self.site.search.tagged(StackIRCConfig.tags.keys()) \
                 .sort('creation').order('asc').fromdate(self.last_request) \
                 .pagesize(2).filter('A9T75')
             sorted_questions = {}
