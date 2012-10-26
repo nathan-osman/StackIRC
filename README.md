@@ -10,9 +10,9 @@ There are two sets of instructions for installing StackIRC - one for Ubuntu 12.0
 
   Open a terminal and run the following commands:
   
-      sudo apt-add-repository ppa:george-edison55/george-edison
-      sudo apt-get update
-      sudo apt-get install python-stackirc
+        sudo apt-add-repository ppa:george-edison55/george-edison
+        sudo apt-get update
+        sudo apt-get install python-stackirc
 
 - **Other Platforms:**
 
